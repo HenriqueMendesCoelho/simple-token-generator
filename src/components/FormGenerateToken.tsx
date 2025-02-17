@@ -282,6 +282,7 @@ function SubmitAndResult({
             readOnly
             ref={resultRef}
             showCopy={!!result}
+            copyText={result?.value || ''}
             message={
               result?.expiration ? `Valid util: ${result.expiration}` : ''
             }

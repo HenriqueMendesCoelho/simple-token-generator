@@ -1,41 +1,35 @@
-import { forwardRef, useRef } from 'react';
+import { forwardRef, useEffect, useState } from 'react';
 import ButtonCopy from './button-copy';
 import TextareaGrey from './textarea-grey';
 
 type Props = {
   className?: string;
   showCopy?: boolean;
+  copyText?: string;
   [key: string]: any;
 };
 
 const textareaGrey = forwardRef<HTMLTextAreaElement, Props>(
-  ({ className, showCopy = true, ...props }, ref) => {
-    const internalRef = useRef<HTMLTextAreaElement>(null);
+  ({ className, showCopy = true, copyText, ...props }, ref) => {
+    const [value, setValue] = useState('');
 
-    const combinedRef = (node: HTMLTextAreaElement | null): void => {
-      if (!node) return;
-
-      if (typeof ref === 'function') {
-        ref(node);
-      }
-
-      if (ref && typeof ref === 'object') {
-        (ref as React.RefObject<HTMLTextAreaElement | null>).current = node;
-      }
-
-      internalRef.current = node;
-    };
+    useEffect(() => {
+      setValue(copyText || '');
+    }, [copyText]);
 
     return (
       <div className="relative">
         <TextareaGrey
-          ref={combinedRef}
-          className={props.className}
+          ref={ref}
+          className={className}
           {...props}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
+            setValue(e.target.value);
+          }}
         />
         {showCopy && (
           <div className="absolute top-7 right-1 ">
-            <ButtonCopy text={internalRef.current?.value ?? ''} sizeIcon={50} />
+            <ButtonCopy text={value} sizeIcon={50} />
           </div>
         )}
       </div>
