@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, UseFormReturn } from 'react-hook-form';
-import { Buffer } from 'buffer';
-import jwt from 'jsonwebtoken';
 
 import { Form, FormControl, FormField, FormItem, FormLabel } from '@/ui/form';
 import { RadioGroup, RadioGroupItem } from '@/ui/radio-group';
@@ -256,16 +255,21 @@ function TokenProperties({ form }: Props) {
   );
 }
 
-function SubmitAndResult({ form, result }: Props & { result: string }) {
-  /*
+function SubmitAndResult({
+  form,
+  result,
+  onClear,
+}: Props & {
+  result: { value: string; expiration?: string };
+  onClear: () => void;
+}) {
   const resultRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (!resultRef.current) return;
 
-    resultRef.current.value = result;
-  });
-  */
+    resultRef.current.value = result.value;
+  }, [result]);
 
   return (
     <>
@@ -275,14 +279,25 @@ function SubmitAndResult({ form, result }: Props & { result: string }) {
             label="Result"
             placeholder="result token or error"
             className="[resize:none]"
-            readOnly={true}
+            readOnly
+            ref={resultRef}
+            showCopy={!!result}
+            message={
+              result?.expiration ? `Valid util: ${result.expiration}` : ''
+            }
           />
         </div>
       </div>
 
       <div className="flex w-full gap-x-2">
         <Button type="submit">Generate</Button>
-        <Button type="button" onClick={() => form.reset()}>
+        <Button
+          type="button"
+          onClick={() => {
+            form.reset();
+            onClear();
+          }}
+        >
           Clear
         </Button>
       </div>
@@ -313,6 +328,7 @@ const formSchema = z.object({
 
 export default function Component() {
   const [result, setResult] = useState('');
+  const [expiration, setExpiration] = useState('');
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -330,47 +346,40 @@ export default function Component() {
     },
   });
 
-  function generateToken(values: z.infer<typeof formSchema>) {
-    const key = values.encoded
-      ? Buffer.from(values.privateKey, 'base64').toString('utf-8')
-      : values.privateKey;
-
-    const decryptedKey =
-      values.alg === 'HS'
-        ? key
-        : crypto.createPrivateKey({
-            key,
-            format: 'pem',
-            type: 'pkcs8',
-            passphrase: values.passphrase ?? '',
-          });
-
-    const token = jwt.sign(
-      {
-        iss: values.iss,
-        aud: values.aud,
-        sub: values.sub,
-      },
-      decryptedKey,
-      {
-        algorithm: `${values.alg}${values.hash}`,
-      }
+  async function handleSubmit(values: z.infer<typeof formSchema>) {
+    const others = Object.fromEntries(
+      values.others
+        .replace(/;$/, '')
+        .split(';')
+        .map((pair) => pair.split('='))
     );
-    const { exp } = jwt.decode(token) as any;
-    const expiresInStr = new Date(exp * 1000).toLocaleString('pt-br', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    });
 
-    return { token, expires: expiresInStr };
-  }
+    try {
+      const [result, expiration]: any = await invoke<{
+        token: string;
+        expiration: string;
+      }>('generate_token_command', {
+        claims: {
+          iss: values.iss,
+          aud: values.aud,
+          sub: values.sub,
+          ...others,
+        },
+        expiresIn: values.expiration,
+        keyConfig: {
+          kind: values.alg === 'RS' ? 'RSA' : 'HMAC',
+          base64_encoded: values.encoded,
+          passphrase: values.passphrase,
+          key_data: values.privateKey,
+        },
+        algStr: `${values.alg}${values.hash}`,
+      });
 
-  function handleSubmit(values: z.infer<typeof formSchema>) {
-    const { token, expires } = generateToken(values);
-
-    setResult(token);
-
-    console.log('expires', expires);
+      setResult(result);
+      setExpiration(expiration || '');
+    } catch (err) {
+      alert(JSON.stringify(err));
+    }
   }
 
   return (
@@ -384,7 +393,11 @@ export default function Component() {
           <div className="border-b"></div>
           <TokenProperties form={form} />
           <div className="border-b"></div>
-          <SubmitAndResult form={form} result={result} />
+          <SubmitAndResult
+            form={form}
+            result={{ value: result, expiration }}
+            onClear={() => setResult('')}
+          />
         </form>
       </Form>
     </>

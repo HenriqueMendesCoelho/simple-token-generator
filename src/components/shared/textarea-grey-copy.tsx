@@ -3,15 +3,13 @@ import ButtonCopy from './button-copy';
 import TextareaGrey from './textarea-grey';
 
 type Props = {
-  label: string;
-  placeholder?: string;
-  message?: string;
   className?: string;
+  showCopy?: boolean;
   [key: string]: any;
 };
 
 const textareaGrey = forwardRef<HTMLTextAreaElement, Props>(
-  ({ className, ...props }, ref) => {
+  ({ className, showCopy = true, ...props }, ref) => {
     const internalRef = useRef<HTMLTextAreaElement>(null);
 
     const combinedRef = (node: HTMLTextAreaElement | null): void => {
@@ -30,11 +28,17 @@ const textareaGrey = forwardRef<HTMLTextAreaElement, Props>(
 
     return (
       <div className="relative">
-        <TextareaGrey ref={combinedRef} className={className} {...props} />
-
-        {internalRef.current?.value && (
+        <TextareaGrey
+          ref={combinedRef}
+          className={props.className}
+          {...props}
+          onChange={() => {
+            console.log('rodei');
+          }}
+        />
+        {showCopy && (
           <div className="absolute top-7 right-1 ">
-            <ButtonCopy text={internalRef.current?.value} sizeIcon={50} />
+            <ButtonCopy text={internalRef.current?.value ?? ''} sizeIcon={50} />
           </div>
         )}
       </div>

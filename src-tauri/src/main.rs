@@ -2,5 +2,5 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 fn main() {
-    tauri_token_creator_lib::run()
+    simple_token_generator_lib::run()
 }
