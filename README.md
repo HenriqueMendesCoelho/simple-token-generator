@@ -21,7 +21,7 @@ This is a simple desktop application built with [Tauri](https://tauri.app/) to g
 
 1. Clone this repository:
    ```sh
-   git clone https://github.com/your-username/simple-token-generator.git
+   git clone https://github.com/HenriqueMendesCoelho/simple-token-generator
    ```
 2. Navigate to the project directory:
    ```sh
