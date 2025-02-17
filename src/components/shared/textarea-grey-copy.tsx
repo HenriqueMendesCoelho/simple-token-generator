@@ -32,9 +32,6 @@ const textareaGrey = forwardRef<HTMLTextAreaElement, Props>(
           ref={combinedRef}
           className={props.className}
           {...props}
-          onChange={() => {
-            console.log('rodei');
-          }}
         />
         {showCopy && (
           <div className="absolute top-7 right-1 ">
