@@ -114,13 +114,8 @@ pub fn generate_token(
     };
 
     let token = encode(&header, &claims, &encoding_key)?;
+    let exp_datetime = Utc.timestamp_opt(exp as i64, 0).unwrap();
+    let exp_iso = exp_datetime.to_rfc3339();
 
-    let exp_datetime = Utc
-        .timestamp_opt(exp as i64, 0)
-        .single()
-        .ok_or("Invalid timestamp")?;
-    let exp_local = exp_datetime.with_timezone(&chrono::Local);
-    let exp_str = exp_local.format("%d/%m/%Y %H:%M").to_string();
-
-    Ok((token, exp_str))
+    Ok((token, exp_iso))
 }

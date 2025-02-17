@@ -11,6 +11,7 @@ import TextareaGrey from '@/components/shared/textarea-grey';
 import { Input } from '@/ui/input';
 import { Button } from '@/ui/button';
 import { Checkbox } from '@/ui/checkbox';
+import { toast } from 'sonner';
 
 import TextareaGreyCopy from '@/components/shared/textarea-grey-copy';
 import RequiredStar from '@/components/shared/required-star';
@@ -284,7 +285,7 @@ function SubmitAndResult({
             showCopy={!!result}
             copyText={result?.value || ''}
             message={
-              result?.expiration ? `Valid util: ${result.expiration}` : ''
+              result?.expiration ? `Valid until: ${result.expiration}` : ''
             }
           />
         </div>
@@ -377,9 +378,18 @@ export default function Component() {
       });
 
       setResult(result);
-      setExpiration(expiration || '');
+
+      const formatedExpiration =
+        expiration &&
+        new Date(expiration).toLocaleString(undefined, {
+          dateStyle: 'full',
+          timeStyle: 'short',
+        });
+      setExpiration(formatedExpiration || '');
     } catch (err) {
-      alert(JSON.stringify(err));
+      toast.error('Error to generate token verify the configuration', {
+        description: err as string,
+      });
     }
   }
 
@@ -389,6 +399,7 @@ export default function Component() {
         <form
           onSubmit={form.handleSubmit(handleSubmit)}
           className="mt-2 space-y-3"
+          autoComplete="off"
         >
           <KeyOptions form={form} />
           <div className="border-b"></div>
