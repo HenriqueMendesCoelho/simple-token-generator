@@ -29,15 +29,15 @@ This is a simple desktop application built with [Tauri](https://tauri.app/) to g
    ```
 3. Install dependencies:
    ```sh
-   npm install
+   yarn install
    ```
 4. Run the application in development mode:
    ```sh
-   npm run tauri dev
+   yarn tauri dev
    ```
 5. To generate a build:
    ```sh
-   npm run tauri build
+   yarn tauri build
    ```
 
 ## Requirements
