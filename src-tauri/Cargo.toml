@@ -1,6 +1,6 @@
 [package]
 name = "simple-token-generator"
-version = "1.0.0"
+version = "1.0.2"
 description = "Generate JWT tokens for testing or development."
 authors = ["you"]
 edition = "2021"
