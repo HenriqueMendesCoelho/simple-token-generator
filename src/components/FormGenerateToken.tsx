@@ -47,6 +47,12 @@ function RadioGroupSelectAlg({ form }: Props) {
                     </FormControl>
                     <Label htmlFor="hs">HMAC</Label>
                   </div>
+                  <div className="flex items-center space-x-1">
+                    <FormControl>
+                      <RadioGroupItem value="ES" id="es" />
+                    </FormControl>
+                    <Label htmlFor="es">ECDSA</Label>
+                  </div>
                 </RadioGroup>
               </FormControl>
             </FormItem>
@@ -313,7 +319,7 @@ const formSchema = z.object({
   }),
   passphrase: z.string(),
   encoded: z.boolean(),
-  alg: z.enum(['HS', 'RS']),
+  alg: z.enum(['HS', 'RS', 'ES']),
   hash: z.enum(['256', '384', '512']),
   iss: z.string().min(3, {
     message: 'Issuer is required.',
@@ -369,7 +375,8 @@ export default function Component() {
         },
         expiresIn: values.expiration,
         keyConfig: {
-          kind: values.alg === 'RS' ? 'RSA' : 'HMAC',
+          kind:
+            values.alg === 'RS' ? 'RSA' : values.alg === 'HS' ? 'HMAC' : 'EC',
           base64_encoded: values.encoded,
           passphrase: values.passphrase,
           key_data: values.privateKey,

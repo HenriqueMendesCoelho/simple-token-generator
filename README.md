@@ -2,12 +2,12 @@
 
 ## Description
 
-This is a simple desktop application built with [Tauri](https://tauri.app/) to generate signed JWT tokens. It supports RS256, RS384, RS512, HS256, HS384, and HS512 signature algorithms, allowing developers to test and develop applications that use JWT authentication.
+This is a simple desktop application built with [Tauri](https://tauri.app/) to generate signed JWT tokens. It supports RS256, RS384, RS512, HS256, HS384, HS512, ES256, ES384, and ES512 signature algorithms, allowing developers to test and develop applications that use JWT authentication.
 
 ## Features
 
 - Generate JWT tokens for testing and development
-- Support for RS256, RS384, RS512, HS256, HS384, and HS512 algorithms
+- Support for RS256, RS384, RS512, HS256, HS384, HS512, ES256, ES384, and ES512 algorithms
 - Option to insert private key and passphrase
 - Configuration of claims such as _audience_, _issuer_, _subject_, and extra properties
 - Flexible expiration time settings
