@@ -3,7 +3,7 @@ import './index.css';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
-import App from './app';
+import App from './App';
 
 import { Toaster } from '@/components/ui/sonner';
 
