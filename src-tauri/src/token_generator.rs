@@ -18,6 +18,10 @@ enum JwtAlgorithm {
     ES256,
     ES384,
     ES512,
+    PS256,
+    PS384,
+    PS512,
+    EdDSA,
 }
 
 impl JwtAlgorithm {
@@ -32,6 +36,10 @@ impl JwtAlgorithm {
             "ES256" => Some(JwtAlgorithm::ES256),
             "ES384" => Some(JwtAlgorithm::ES384),
             "ES512" => Some(JwtAlgorithm::ES512),
+            "PS256" => Some(JwtAlgorithm::PS256),
+            "PS384" => Some(JwtAlgorithm::PS384),
+            "PS512" => Some(JwtAlgorithm::PS512),
+            "EdDSA" => Some(JwtAlgorithm::EdDSA),
             _ => None,
         }
     }
@@ -44,6 +52,10 @@ impl JwtAlgorithm {
             JwtAlgorithm::HS256 => Algorithm::HS256,
             JwtAlgorithm::HS384 => Algorithm::HS384,
             JwtAlgorithm::HS512 => Algorithm::HS512,
+            JwtAlgorithm::PS256 => Algorithm::PS256,
+            JwtAlgorithm::PS384 => Algorithm::PS384,
+            JwtAlgorithm::PS512 => Algorithm::PS512,
+            JwtAlgorithm::EdDSA => Algorithm::EdDSA,
             JwtAlgorithm::ES256 | JwtAlgorithm::ES384 | JwtAlgorithm::ES512 => {
                 unreachable!("ECDSA algorithms are handled by the OpenSSL ECDSA signer")
             }
@@ -56,6 +68,7 @@ enum KeyKind {
     RSA,
     HMAC,
     EC,
+    Ed,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -134,6 +147,25 @@ pub fn generate_token(
         }
         KeyKind::EC => {
             unreachable!("EC keys are handled by the OpenSSL ECDSA signer")
+        }
+        KeyKind::Ed => {
+            let pem = if key_config.base64_encoded {
+                let decoded_bytes = general_purpose::STANDARD.decode(key_config.key_data.trim())?;
+                String::from_utf8(decoded_bytes)?
+            } else {
+                key_config.key_data.clone()
+            };
+
+            match key_config.passphrase {
+                Some(ref pass) if !pass.is_empty() => {
+                    use openssl::pkey::PKey;
+                    let pkey =
+                        PKey::private_key_from_pem_passphrase(pem.as_bytes(), pass.as_bytes())?;
+                    let der = pkey.private_key_to_pkcs8()?;
+                    EncodingKey::from_ed_der(&der)
+                }
+                _ => EncodingKey::from_ed_pem(pem.as_bytes())?,
+            }
         }
     };
 

@@ -21,6 +21,7 @@ type Props = {
 };
 
 function RadioGroupSelectAlg({ form }: Props) {
+  const hashDisabled = form.watch('alg') === 'ED';
   return (
     <>
       <div className="w-1/10 flex-initial pt-6">
@@ -53,6 +54,18 @@ function RadioGroupSelectAlg({ form }: Props) {
                     </FormControl>
                     <Label htmlFor="es">ECDSA</Label>
                   </div>
+                  <div className="flex items-center space-x-1">
+                    <FormControl>
+                      <RadioGroupItem value="PS" id="ps" />
+                    </FormControl>
+                    <Label htmlFor="ps">PSS</Label>
+                  </div>
+                  <div className="flex items-center space-x-1">
+                    <FormControl>
+                      <RadioGroupItem value="ED" id="ed" />
+                    </FormControl>
+                    <Label htmlFor="ed">EdDSA</Label>
+                  </div>
                 </RadioGroup>
               </FormControl>
             </FormItem>
@@ -71,21 +84,21 @@ function RadioGroupSelectAlg({ form }: Props) {
                   onValueChange={field.onChange}
                   value={field.value}
                 >
-                  <div className="flex items-center space-x-1">
+                  <div className={`flex items-center space-x-1 ${hashDisabled ? 'opacity-40' : ''}`}>
                     <FormControl>
-                      <RadioGroupItem value="256" id="256" />
+                      <RadioGroupItem value="256" id="256" disabled={hashDisabled} />
                     </FormControl>
                     <Label htmlFor="256">256</Label>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className={`flex items-center space-x-1 ${hashDisabled ? 'opacity-40' : ''}`}>
                     <FormControl>
-                      <RadioGroupItem value="384" id="384" />
+                      <RadioGroupItem value="384" id="384" disabled={hashDisabled} />
                     </FormControl>
                     <Label htmlFor="384">384</Label>
                   </div>
-                  <div className="flex items-center space-x-1">
+                  <div className={`flex items-center space-x-1 ${hashDisabled ? 'opacity-40' : ''}`}>
                     <FormControl>
-                      <RadioGroupItem value="512" id="512" />
+                      <RadioGroupItem value="512" id="512" disabled={hashDisabled} />
                     </FormControl>
                     <Label htmlFor="512">512</Label>
                   </div>
@@ -319,7 +332,7 @@ const formSchema = z.object({
   }),
   passphrase: z.string(),
   encoded: z.boolean(),
-  alg: z.enum(['HS', 'RS', 'ES']),
+  alg: z.enum(['HS', 'RS', 'ES', 'PS', 'ED']),
   hash: z.enum(['256', '384', '512']),
   iss: z.string().min(3, {
     message: 'Issuer is required.',
@@ -376,12 +389,19 @@ export default function Component() {
         expiresIn: values.expiration,
         keyConfig: {
           kind:
-            values.alg === 'RS' ? 'RSA' : values.alg === 'HS' ? 'HMAC' : 'EC',
+            values.alg === 'RS' || values.alg === 'PS'
+              ? 'RSA'
+              : values.alg === 'HS'
+                ? 'HMAC'
+                : values.alg === 'ES'
+                  ? 'EC'
+                  : 'Ed',
           base64_encoded: values.encoded,
           passphrase: values.passphrase,
           key_data: values.privateKey,
         },
-        algStr: `${values.alg}${values.hash}`,
+        algStr:
+          values.alg === 'ED' ? 'EdDSA' : `${values.alg}${values.hash}`,
       });
 
       setResult(result);

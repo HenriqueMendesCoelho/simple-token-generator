@@ -13,11 +13,11 @@
     "windows": [
       {
         "title": "Simple Token Generator",
-        "width": 600,
-        "height": 610,
+        "width": 650,
+        "height": 680,
         "fullscreen": false,
         "maximizable": false,
-        "resizable": false
+        "resizable": true
       }
     ],
     "security": {
